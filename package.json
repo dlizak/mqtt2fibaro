@@ -1,0 +1,11 @@
+{
+  "name": "mqtt-to-fibaro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "mqtt": "^2.18.8"
+  }
+}
