@@ -1,8 +1,8 @@
 const http = require('http')
 const mqtt = require('mqtt');
-const secret = require('./secret');
+const secret = require('./secret.json');
 const config = require('./config.json');
-const client  = mqtt.connect('mqtt://localhost');
+const client  = mqtt.connect(`mqtt://${config.mqttHost}`);
 
 let lastPropertyValues = {};
 
@@ -61,8 +61,8 @@ let doRequest = function(variableName, payload) {
   let data = JSON.stringify(payload);
 
   const req = http.request({
-    hostname: secret.hostname,
-    auth: secret.auth,
+    hostname: config.fibaroHost,
+    auth: `${secret.fibaroUser}:${secret.fibaroPassword}`,
     port: 80,
     path: `/api/globalVariables/${variableName}`,
     method: 'PUT',
