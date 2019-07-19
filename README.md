@@ -20,6 +20,7 @@ npm install
 2. Create `config.json` file in root application directory. This is example for motion sensor and contact sensor:
 ```json
 {
+  "mqttHost": "localhost",
   "fibaroHost": "192.168.1.120",
   "topics": {
     "zigbee2mqtt/0x0017880104b501fc": {
@@ -55,8 +56,10 @@ You can add `"invokeScenes": true` to any property, which you need to execute sc
 3. Create `secret.json` file in root application directory. This is example for motion sensor and contact sensor:
 ```
 {
-  "auth": "your-fibaro-login:your-fibaro-password"
+  "fibaroUser": "some@user.com",
+  "fibaroPassword": "somepassword"
 }
+
 ```
 
 ## Running
