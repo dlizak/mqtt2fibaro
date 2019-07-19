@@ -1,8 +1,8 @@
 {
-  "name": "mqtt-to-fibaro",
+  "name": "mqtt2fibaro",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "mqtt2fibaro.js",
   "author": "",
   "license": "",
   "dependencies": {
