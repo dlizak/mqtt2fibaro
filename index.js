@@ -1,65 +1,76 @@
 const http = require('http')
 const mqtt = require('mqtt');
 const secret = require('./secret');
-const devices = require('./devices');
+const config = require('./config.json');
 const client  = mqtt.connect('mqtt://localhost');
 
-client.on('connect', function() {
-  console.log('connected');
+let lastPropertyValues = {};
 
-  client.subscribe('zigbee2mqtt/+', function (err) {
-    // subscription error
+console.log("Connecting to MQTT server...");
+client.on('connect', function() {
+  console.log('Connected');
+  const topics = Object.keys(config.topics);
+
+  console.log('Subscribe to:', topics);
+  client.subscribe(topics, function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      prepareLastPropertyValues(topics);
+    }
   });
 });
 
 client.on('message', function(topic, message) {
-  var messageObj = JSON.parse(message.toString());
-  // console.log(topic, messageObj);
+  let messageObj = JSON.parse(message.toString());
+  console.log('Received message', topic, messageObj);
 
-  if (typeof messageObj.occupancy !== 'undefined') {
-    updateFibaroMotionSensorVariable(topic, messageObj.occupancy);
-  }
-
-  if (typeof messageObj.contact !== 'undefined') {
-    updateFibaroWindowSensorVariable(topic, messageObj.contact);
-  }
+  Object.keys(config.topics[topic].properties).forEach((property) => {
+    if (typeof messageObj[property] !== 'undefined') {
+      updateFibaroVariable(
+        topic,
+        property,
+        messageObj[property]
+      );
+    }
+  })
 });
 
-var updateFibaroMotionSensorVariable = function(topic, val) {
-  var name = devices.motionSensors[topic];
-  var value = val ? 'on' : 'off';
-
-  console.log(name, value);
-  doRequest(name, value);
-};
-
-var updateFibaroWindowSensorVariable = function(topic, val) {
-  var name = devices.windowSensors[topic];
-  var value = val ? 'closed' : 'open';
-
-  console.log(name, value);
-  doRequest(name, value);
-};
-
-var doRequest = function(name, value) {
-  var data = JSON.stringify({
-    'value': value,
-    'invokeScenes': true
+let prepareLastPropertyValues = function(topics) {
+  topics.forEach((topic) => {
+    lastPropertyValues[topic] = {};
   });
+};
 
-  const options = {
+let updateFibaroVariable = function(topic, property, value) {
+  let device = config.topics[topic];
+  let variableName = device.properties[property].variableName;
+  let invokeScenes = device.properties[property].invokeScenes;
+
+  if (value !== lastPropertyValues[topic][property]) {
+    console.log('Sending', variableName, value);
+    doRequest(variableName, {
+      'value': String(value),
+      'invokeScenes': invokeScenes
+    });
+    lastPropertyValues[topic][property] = value;
+  }
+};
+
+let doRequest = function(variableName, payload) {
+  let data = JSON.stringify(payload);
+
+  const req = http.request({
     hostname: secret.hostname,
     auth: secret.auth,
     port: 80,
-    path: `/api/globalVariables/${name}`,
+    path: `/api/globalVariables/${variableName}`,
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': data.length
     }
-  };
-
-  const req = http.request(options, (res) => {
+  }, (res) => {
     console.log(`statusCode: ${res.statusCode}`);
 
     res.on('data', (d) => {
