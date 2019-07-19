@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "mqtt2fibaro.js",
-  "author": "",
+  "author": "Dawid Lizak",
   "license": "",
   "dependencies": {
     "mqtt": "^2.18.8"
