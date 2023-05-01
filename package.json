@@ -6,6 +6,6 @@
   "author": "Dawid Lizak",
   "license": "",
   "dependencies": {
-    "mqtt": "^2.18.8"
+    "mqtt": "^4.3.7"
   }
 }
